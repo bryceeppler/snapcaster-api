@@ -74,8 +74,12 @@ class getBulkPrice(APIView):
         for card in cardList:
             # check if it has the cheapest condition in stock
             for condition in card['stock']:
-                if condition[0] == 'Brand New':
-                    print('website: ', scraper.website)
+                if "Default" in condition[0]:
+                    print('bugged website' + card['website'])
+                    print('condition should not be '+condition[0])
+                    print('card link is '+card['link'])
+                if condition[0] not in self.conditionDict.keys():
+                    continue
                 if self.conditionDict[condition[0]] <= self.worstCondition:
                     if condition[1] < cheapestPrice:
                         cheapestPrice = condition[1]
@@ -120,6 +124,9 @@ class getBulkPrice(APIView):
                 continue
 
             for condition in stock:
+                conditionCode = condition[0]
+                if conditionCode not in self.conditionDict.keys():
+                    continue
                 if self.conditionDict[condition[0]] <= self.worstCondition:
                     if condition[1] < cheapestPrice:
                         cheapestPrice = condition[1]

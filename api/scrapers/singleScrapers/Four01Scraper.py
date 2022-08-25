@@ -61,8 +61,12 @@ class Four01Scraper(Scraper):
                         condition="MP"
                     elif "HP" in condition:
                         condition="HP" 
-                    elif "DMG" or "Damaged" in condition:
+                    elif "DMG" in condition:
                         condition="HP"
+                    elif "Damaged" in condition:
+                        condition="HP"
+                    elif "Default" in condition:
+                        condition="NM"
 
                     price = float(item[1][1][0].replace("CAD:" , ""))
                     stock.append((condition,price))
@@ -80,6 +84,10 @@ class Four01Scraper(Scraper):
                             condition="HP" 
                         elif "DMG" in condition:
                             condition="HP"
+                        elif "Damaged" in condition:
+                            condition="HP"
+                        elif "Default" in condition:
+                            condition="NM"
 
                         price = float(item[0][1][0].replace("CAD:" , ""))
                         stock.append((condition,price))
