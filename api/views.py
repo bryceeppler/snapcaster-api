@@ -6,11 +6,16 @@ from .scrapers.singleScrapers.KanatacgScraper import KanatacgScraper
 from .scrapers.singleScrapers.FusionScraper import FusionScraper
 from .scrapers.singleScrapers.Four01Scraper import Four01Scraper
 import concurrent.futures
+from rest_framework import status
 import json
 import re
 
 
 # Create your views here.
+class ping(APIView):
+    def get(self, request):
+        return Response(status=status.HTTP_200_OK)
+
 class getPrice(APIView):
     results = []
 

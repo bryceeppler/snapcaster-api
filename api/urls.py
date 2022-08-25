@@ -7,6 +7,7 @@ from . import views
 urlpatterns = [
     path('bulk/', views.getBulkPrice.as_view()),
     path('', views.getPrice.as_view(),),
+    path('ping/', views.ping.as_view(),),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
