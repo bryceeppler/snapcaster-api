@@ -61,7 +61,7 @@ class Four01Scraper(Scraper):
                         condition="MP"
                     elif "HP" in condition:
                         condition="HP" 
-                    elif "DMG" in condition:
+                    elif "DMG" or "Damaged" in condition:
                         condition="HP"
 
                     price = float(item[1][1][0].replace("CAD:" , ""))

@@ -58,6 +58,8 @@ class FusionScraper(Scraper):
                 condition="MP"
             elif "Heavy" in condition:
                 condition="HP"
+            elif "Damaged" in condition:
+                condition="HP"
 
             price = float(card.select_one('form.add-to-cart-form')['data-price'].replace('CAD$ ', ''))
             added = False

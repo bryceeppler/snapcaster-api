@@ -47,13 +47,16 @@ class GauntletScraper(Scraper):
                 if 'no-stock' in c['class']:
                     continue
                 condition = c.select_one('span.variant-description').getText()
-                if "NM" in condition:
+            
+                if "NM" or "Brand New" in condition:
                     condition="NM"
                 elif "Light" in condition:
                     condition="LP"
                 elif "Moderate" in condition:
                     condition="MP"
                 elif "Heavy" in condition:
+                    condition="HP"
+                elif "Damaged" in condition:
                     condition="HP"
 
                 price = float(c.select_one('form.add-to-cart-form')['data-price'].replace('CAD$ ', ''))

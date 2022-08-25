@@ -58,6 +58,8 @@ class KanatacgScraper(Scraper):
                     condition="MP"
                 elif "Heav" in condition:
                     condition="HP"
+                elif "Damaged" or "DMG" in condition:
+                    condition="HP"
                 price = float(c.select('td')[1].getText().replace('CAD$ ', ''))
                 if (condition, price) not in variantStockList:
                     variantStockList.append((condition, price))

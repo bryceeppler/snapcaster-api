@@ -1,14 +1,15 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from .scrapers.singleScrapers.GauntletScraper import GauntletScraper
 from .scrapers.singleScrapers.HouseOfCardsScraper import HouseOfCardsScraper
 from .scrapers.singleScrapers.KanatacgScraper import KanatacgScraper
 from .scrapers.singleScrapers.FusionScraper import FusionScraper
 from .scrapers.singleScrapers.Four01Scraper import Four01Scraper
-import concurrent.futures
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework import status
+import concurrent.futures
 import json
 import re
+
 
 
 # Create your views here.
@@ -54,105 +55,93 @@ class getPrice(APIView):
         return Response(data)
 
 class getBulkPrice(APIView):
+    worstCondition = 3
     conditionDict = {
         'NM': 0,
         'LP': 1,
         'MP': 2,
         'HP': 3,
     }
-    results = []
-    tempResults = []
-    websites = []
-    worstCondition = None
-    def transformScrapers(self, scraper):
+    def scraperThread(self, scraper):
+        """
+        Returns the cheapest price of a card from a single store.
+        """
         scraper.scrape()
         cardList = scraper.getResults() # a list of card objects
-
         # get the cheapest card from the list
         cheapestPrice = 100000
         cheapestCard = None
         for card in cardList:
             # check if it has the cheapest condition in stock
             for condition in card['stock']:
+                if condition[0] == 'Brand New':
+                    print('website: ', scraper.website)
                 if self.conditionDict[condition[0]] <= self.worstCondition:
                     if condition[1] < cheapestPrice:
                         cheapestPrice = condition[1]
                         cheapestCard = card
 
-        self.tempResults.append(cheapestCard)     
-        return
+        return  cheapestCard
 
-    def transformCards(self, cardName):
-            # strip any prefixed numbers from the card name
-            cardName = re.sub(r'^\d+\s', '', cardName)
+    def cardThread(self, cardName):
+        """
+        Returns the cheapest price of a card across all stores.
+        """
+        # create scrapers
+        scrapers = []
+        if 'gauntlet' in self.websites:
+            scrapers.append(GauntletScraper(cardName))
+        if 'houseoOfCards' in self.websites:
+            scrapers.append(HouseOfCardsScraper(cardName))
+        if 'kanatacg' in self.websites:
+            scrapers.append(KanatacgScraper(cardName))
+        if 'fusion' in self.websites:
+            scrapers.append(FusionScraper(cardName))
+        if 'four01' in self.websites:
+            scrapers.append(Four01Scraper(cardName))
 
-            # a list of scrapers to run
-            scrapers = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            results = executor.map(self.scraperThread, scrapers)
+            # results now has the cheapest price from each store
 
-            # create a scraper for each website and add it to the list
-            if 'gauntlet' in self.websites:
-                scrapers.append(GauntletScraper(cardName))
-            if 'houseoOfCards' in self.websites:
-                scrapers.append(HouseOfCardsScraper(cardName))
-            if 'kanatacg' in self.websites:
-                scrapers.append(KanatacgScraper(cardName))
-            if 'fusion' in self.websites:
-                scrapers.append(FusionScraper(cardName))
-            if 'four01' in self.websites:
-                scrapers.append(Four01Scraper(cardName))
+        # filter through results to find the cheapest card
+        cheapestPrice = 100000
+        cheapestCard = None
+    
+        for card in results:
+            try:
+                name = card['name']
+                stock = card['stock']
+                if "Art Card" in name:
+                    continue
+                elif "Art Series" in name:
+                    continue
+            except:
+                continue
 
-            # run each scraper in a thread
-            with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-                results = executor.map(self.transformScrapers, scrapers)
+            for condition in stock:
+                if self.conditionDict[condition[0]] <= self.worstCondition:
+                    if condition[1] < cheapestPrice:
+                        cheapestPrice = condition[1]
+                        cheapestCard = card
 
-            # if no results, continue
-            if len(self.tempResults) == 0:
-                return
+        return cheapestCard
 
-            # get the cheapest catd
-            cheapestCard = None
-            cheapestPrice = 100000
-
-            for card in self.tempResults:
-                # check if it has the cheapest condition in stock
-                try:
-                    for condition in card['stock']:
-                        if condition[1] < cheapestPrice:
-                            cheapestPrice = condition[1]
-                            cheapestCard = card.copy()
-                except TypeError:
-                    pass
-
-            self.results.append(cheapestCard)
-            self.tempResults.clear()
-
+    
     def post(self, request):
-        """
-        Given a list of card names, and a list of websites,
-        get the cheapest price of each card across the provided
-        stores.
-        """
-        # get request body as json
         body = json.loads(request.body.decode('utf-8'))
-
-        # a list of websites to scrape
         self.websites = body['websites']
-
-        # a list of card names to scrape
-        cardNames = body['cardNames']
-
-        # worst acceptable condition
+        cardNameList = [re.sub(r'^\d+\s', '', cardName) for cardName in body['cardNames']]
+        
+        # worst acceptable condition as an int
         try:
             self.worstCondition = self.conditionDict[body['condition']]
         except:
             self.worstCondition = 4
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
-            results = executor.map(self.transformCards, cardNames)
 
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            results = executor.map(self.cardThread, cardNameList, timeout=20)
 
-        data = self.results.copy()
-        self.results.clear()
-        self.worstCondition=None
-        self.websites.clear()
-        return Response(data)
+        cheapestCards = list(results)
+        return Response(cheapestCards, status=status.HTTP_200_OK)
