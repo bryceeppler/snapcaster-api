@@ -54,8 +54,15 @@ class getPrice(APIView):
         return Response(data)
 
 class getBulkPrice(APIView):
+    conditionDict = {
+        'NM': 0,
+        'LP': 1,
+        'MP': 2,
+        'HP': 3,
+    }
     results = []
     tempResults = []
+    worstCondition = None
     def transform(self, scraper):
         scraper.scrape()
         cardList = scraper.getResults() # a list of card objects
@@ -66,9 +73,10 @@ class getBulkPrice(APIView):
         for card in cardList:
             # check if it has the cheapest condition in stock
             for condition in card['stock']:
-                if condition[1] < cheapestPrice:
-                    cheapestPrice = condition[1]
-                    cheapestCard = card
+                if self.conditionDict[condition[0]] <= self.worstCondition:
+                    if condition[1] < cheapestPrice:
+                        cheapestPrice = condition[1]
+                        cheapestCard = card
 
         self.tempResults.append(cheapestCard)     
         return
@@ -87,6 +95,12 @@ class getBulkPrice(APIView):
 
         # a list of card names to scrape
         cardNames = body['cardNames']
+
+        # worst acceptable condition
+        try:
+            self.worstCondition = self.conditionDict[body['condition']]
+        except:
+            self.worstCondition = 4
 
         for cardName in cardNames:
             # strip any prefixed numbers from the card name
@@ -136,4 +150,5 @@ class getBulkPrice(APIView):
 
         data = self.results.copy()
         self.results.clear()
+        self.worstCondition=None
         return Response(data)
