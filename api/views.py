@@ -62,8 +62,9 @@ class getBulkPrice(APIView):
     }
     results = []
     tempResults = []
+    websites = []
     worstCondition = None
-    def transform(self, scraper):
+    def transformScrapers(self, scraper):
         scraper.scrape()
         cardList = scraper.getResults() # a list of card objects
 
@@ -81,28 +82,7 @@ class getBulkPrice(APIView):
         self.tempResults.append(cheapestCard)     
         return
 
-    def post(self, request):
-        """
-        Given a list of card names, and a list of websites,
-        get the cheapest price of each card across the provided
-        stores.
-        """
-        # get request body as json
-        body = json.loads(request.body.decode('utf-8'))
-
-        # a list of websites to scrape
-        websites = body['websites']
-
-        # a list of card names to scrape
-        cardNames = body['cardNames']
-
-        # worst acceptable condition
-        try:
-            self.worstCondition = self.conditionDict[body['condition']]
-        except:
-            self.worstCondition = 4
-
-        for cardName in cardNames:
+    def transformCards(self, cardName):
             # strip any prefixed numbers from the card name
             cardName = re.sub(r'^\d+\s', '', cardName)
 
@@ -110,24 +90,24 @@ class getBulkPrice(APIView):
             scrapers = []
 
             # create a scraper for each website and add it to the list
-            if 'gauntlet' in websites:
+            if 'gauntlet' in self.websites:
                 scrapers.append(GauntletScraper(cardName))
-            if 'houseoOfCards' in websites:
+            if 'houseoOfCards' in self.websites:
                 scrapers.append(HouseOfCardsScraper(cardName))
-            if 'kanatacg' in websites:
+            if 'kanatacg' in self.websites:
                 scrapers.append(KanatacgScraper(cardName))
-            if 'fusion' in websites:
+            if 'fusion' in self.websites:
                 scrapers.append(FusionScraper(cardName))
-            if 'four01' in websites:
+            if 'four01' in self.websites:
                 scrapers.append(Four01Scraper(cardName))
 
             # run each scraper in a thread
             with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-                results = executor.map(self.transform, scrapers)
+                results = executor.map(self.transformScrapers, scrapers)
 
             # if no results, continue
             if len(self.tempResults) == 0:
-                continue
+                return
 
             # get the cheapest catd
             cheapestCard = None
@@ -146,9 +126,33 @@ class getBulkPrice(APIView):
             self.results.append(cheapestCard)
             self.tempResults.clear()
 
+    def post(self, request):
+        """
+        Given a list of card names, and a list of websites,
+        get the cheapest price of each card across the provided
+        stores.
+        """
+        # get request body as json
+        body = json.loads(request.body.decode('utf-8'))
+
+        # a list of websites to scrape
+        self.websites = body['websites']
+
+        # a list of card names to scrape
+        cardNames = body['cardNames']
+
+        # worst acceptable condition
+        try:
+            self.worstCondition = self.conditionDict[body['condition']]
+        except:
+            self.worstCondition = 4
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+            results = executor.map(self.transformCards, cardNames)
 
 
         data = self.results.copy()
         self.results.clear()
         self.worstCondition=None
+        self.websites.clear()
         return Response(data)
