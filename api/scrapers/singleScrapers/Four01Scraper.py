@@ -52,14 +52,17 @@ class Four01Scraper(Scraper):
                 
                 if item[0][0] == 'Condition':
                     condition = item[0][1][0]
+
                     if "NM" in condition:
                         condition="NM"
                     elif "SP" in condition:
                         condition="LP"
                     elif "MP" in condition:
                         condition="MP"
-                    elif "Heavy" in condition:
+                    elif "HP" in condition:
                         condition="HP" 
+                    elif "DMG" in condition:
+                        condition="HP"
 
                     price = float(item[1][1][0].replace("CAD:" , ""))
                     stock.append((condition,price))
@@ -73,8 +76,10 @@ class Four01Scraper(Scraper):
                             condition="LP"
                         elif "MP" in condition:
                             condition="MP"
-                        elif "Heavy" in condition:
+                        elif "HP" in condition:
                             condition="HP" 
+                        elif "DMG" in condition:
+                            condition="HP"
 
                         price = float(item[0][1][0].replace("CAD:" , ""))
                         stock.append((condition,price))
@@ -88,7 +93,7 @@ class Four01Scraper(Scraper):
                 'image': image,
                 'link': url,
                 'stock': stock,
-                'web site': self.website
+                'website': self.website
             })
 
         self.results = cardList
