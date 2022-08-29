@@ -3,12 +3,20 @@ from .scrapers.singleScrapers.HouseOfCardsScraper import HouseOfCardsScraper
 from .scrapers.singleScrapers.KanatacgScraper import KanatacgScraper
 from .scrapers.singleScrapers.FusionScraper import FusionScraper
 from .scrapers.singleScrapers.Four01Scraper import Four01Scraper
+
+from .scrapers.singleScrapersV2.GauntletScraper import GauntletScraper as GauntletScraperV2
+from .scrapers.singleScrapersV2.HouseOfCardsScraper import HouseOfCardsScraper as HouseOfCardsScraperV2
+from .scrapers.singleScrapersV2.KanatacgScraper import KanatacgScraper as KanatacgScraperV2
+from .scrapers.singleScrapersV2.FusionScraper import FusionScraper as FusionScraperV2
+from .scrapers.singleScrapersV2.Four01Scraper import Four01Scraper as Four01ScraperV2
+
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 import concurrent.futures
 import json
 import re
+
 
 
 
@@ -74,15 +82,15 @@ class getBulkPrice(APIView):
         for card in cardList:
             # check if it has the cheapest condition in stock
             for condition in card['stock']:
-                if "Default" in condition[0]:
+                if "Default" in condition['condition']:
                     print('bugged website' + card['website'])
-                    print('condition should not be '+condition[0])
+                    print('condition should not be '+condition['condition'])
                     print('card link is '+card['link'])
-                if condition[0] not in self.conditionDict.keys():
+                if condition['condition'] not in self.conditionDict.keys():
                     continue
-                if self.conditionDict[condition[0]] <= self.worstCondition:
-                    if condition[1] < cheapestPrice:
-                        cheapestPrice = condition[1]
+                if self.conditionDict[condition['condition']] <= self.worstCondition:
+                    if condition['price'] < cheapestPrice:
+                        cheapestPrice = condition['price']
                         cheapestCard = card
 
         return  cheapestCard
@@ -124,12 +132,12 @@ class getBulkPrice(APIView):
                 continue
 
             for condition in stock:
-                conditionCode = condition[0]
+                conditionCode = condition['condition']
                 if conditionCode not in self.conditionDict.keys():
                     continue
-                if self.conditionDict[condition[0]] <= self.worstCondition:
-                    if condition[1] < cheapestPrice:
-                        cheapestPrice = condition[1]
+                if self.conditionDict[condition['condition']] <= self.worstCondition:
+                    if condition['price'] < cheapestPrice:
+                        cheapestPrice = condition['price']
                         cheapestCard = card
 
         return cheapestCard
@@ -152,3 +160,66 @@ class getBulkPrice(APIView):
 
         cheapestCards = list(results)
         return Response(cheapestCards, status=status.HTTP_200_OK)
+        
+
+class getPriceV2(APIView):
+    results = []
+
+    def transform(self, scraper):
+        scraper.scrape()
+        self.results.append(scraper.getResults())
+        return
+
+    def get(self, request):
+        # with open('./api/dummyresponse.json') as f:
+        #     data = json.load(f)
+        # return Response(data)
+        """
+        Given the name of a card as a query paramater,
+        get the price of a card across all stores.
+        """
+        # get "name" parameter from request
+        name = request.GET.get('name')
+
+        houseOfCardsScraper = HouseOfCardsScraperV2(name)
+        gauntletScraper = GauntletScraperV2(name)
+        kanatacgScraper = KanatacgScraperV2(name)
+        fusionScraper = FusionScraperV2(name)
+        four01Scraper = Four01ScraperV2(name)
+
+        scrapers = [
+            houseOfCardsScraper,
+            gauntletScraper,
+            kanatacgScraper,
+            fusionScraper,
+            four01Scraper
+        ]
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            results = executor.map(self.transform, scrapers)
+
+        data = self.results.copy()
+        self.results.clear()
+        
+        # post processing to join arrays
+        data = [item for sublist in data for item in sublist]
+
+        # formattedData will have an object for every card condition, eliminating the stock list
+        formattedData = []
+        for card in data:
+            for condition in card['stock']:
+                formattedData.append({
+                    'name': card['name'],
+                    'price': condition['price'],
+                    'condition': condition['condition'],
+                    'link': card['link'],
+                    'website': card['website'],
+                    'set': card['set'],
+                    'image': card['image']
+                })
+
+        # add an id to every json object in data
+        for i in range(len(formattedData)):
+            formattedData[i]['id'] = i
+
+        return Response(formattedData)

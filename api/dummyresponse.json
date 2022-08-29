@@ -1,0 +1,71 @@
+[  
+  {
+    "name": "Intruder Alarm - Fblthp: Completely, Utterly, Totally Lost (SLD) (Foil)",
+    "set": "Secret Lair Drop",
+    "image": "https://cdn.shopify.com/s/files/1/1704/1809/products/50093179-2369-49db-a66d-ce3225363f5d_36c7bc8a-b696-481d-9239-1ef319c762c1_large.png?v=1652213764",
+    "link": "https://store.401games.ca/products/intruder-alarm-borderless-sld-foil",
+    "stock": [{ "condition": "NM", "price": 30.0 }],
+    "website": "four01",
+    "id": 2
+  },{
+  "name": "Frantic Search - Fblthp: Completely, Utterly, Totally Lost (SLD) (Foil)",
+  "set": "Secret Lair Drop",
+  "image": "https://cdn.shopify.com/s/files/1/1704/1809/products/6e2e5b6e-ca2e-4149-bad6-784f40afa9fb_9a15f667-a9b5-46de-9326-6df177b75d0b_large.png?v=1652213760",
+  "link": "https://store.401games.ca/products/frantic-search-borderless-sld-foil",
+  "stock": [{ "condition": "NM", "price": 10.0 }],
+  "website": "four01",
+  "id": 6
+},
+  {
+    "name": "Fblthp, the Lost - Fblthp: Completely, Utterly, Totally Lost (SLD) (Foil)",
+    "set": "Secret Lair Drop",
+    "image": "https://cdn.shopify.com/s/files/1/1704/1809/products/0b168b85-323c-4d95-80a5-851988522606_592c9a15-3143-47f9-b5c6-155950b201b9_large.png?v=1652214312",
+    "link": "https://store.401games.ca/products/fblthp-the-lost-borderless-sld-foil",
+    "stock": [{ "condition": "NM", "price": 15.0 }],
+    "website": "four01",
+    "id": 0
+
+
+  },
+  {
+    "id": 1,
+    "name": "Dockside Extortionist (Borderless Alternate Art) ",
+    "link": "https://cdn.shopify.com/s/files/1/1704/1809/products/0b168b85-323c-4d95-80a5-851988522606_592c9a15-3143-47f9-b5c6-155950b201b9_large.png?v=1652214312",
+    "image": "https://cdn.shopify.com/s/files/1/0567/4178/9882/products/ff188554-0e12-5639-93a1-70698148b309_0cb12531-5a98-493a-bfff-bf4b21f1e96f_large.jpg?v=1656444292",
+    "set": "Double Masters 2022",
+    "stock": [
+      {
+        "condition": "NM",
+        "price": 0.5
+      },
+      {
+        "condition": "LP",
+        "price": 0.4
+      },
+      {
+        "condition": "MP",
+        "price": 0.3
+      },
+      {
+        "condition": "HP",
+        "price": 0.2
+      }
+    ],
+    "website": "houseOfCards"
+  },
+  {
+    "id": 2,
+    "name": "Dockside Extortionist",
+    "link": "https://www.kanatacg.com/catalog/magic_singles-special_editions-commander_set_singles-commander_2019/dockside_extortionist/478422",
+    "image": "https://crystal-cdn3.crystalcommerce.com/photos/6522815/large/en_2UKUpFPSWV.png",
+    "set": "Commander 2019",
+    "stock": [
+      {
+        "condition": "NM",
+        "price": 82.94
+      }
+    ],
+    "website": "kanatacg"
+  }
+]
+
