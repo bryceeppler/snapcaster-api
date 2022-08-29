@@ -24,10 +24,8 @@ SECRET_KEY = 'django-insecure-qtmx*lb9zjn173u6a&fmfz&1%&e@o$@z8@$o_$qa$cz3_n-f&q
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-from socket import gethostname, gethostbyname, gethostbyname_ex
-ALLOWED_HOSTS = [ gethostname(), ] + list(set(gethostbyname_ex(gethostname())[2]))
 
-# ALLOWED_HOSTS = ['alb-sc-api-1201377282.us-east-1.elb.amazonaws.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*', 'alb-sc-api-1201377282.us-east-1.elb.amazonaws.com', 'localhost', '127.0.0.1']
 
 CORS_ORIGIN_ALLOW_ALL = True
 
