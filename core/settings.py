@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +21,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-qtmx*lb9zjn173u6a&fmfz&1%&e@o$@z8@$o_$qa$cz3_n-f&q'
+# SECRET_KEY = 'django-insecure-qtmx*lb9zjn173u6a&fmfz&1%&e@o$@z8@$o_$qa$cz3_n-f&q'
+SECRET_KEY = os.environ.get('SECRET_KEY', default='django-insecure-qtmx*lb9zjn173u6a&fmfz&1%&e@o$@z8@$o_$qa$cz3_n-f&q')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+# DEBUG = False
+DEBUG = 'RENDER' not in os.environ
 
-ALLOWED_HOSTS = ['*', 'alb-sc-api-1201377282.us-east-1.elb.amazonaws.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*', 'bryceeppler.com', 'localhost', '127.0.0.1']
+# ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS').split(' ')
 
 CORS_ORIGIN_ALLOW_ALL = True
 
