@@ -1,19 +1,19 @@
-FROM python:3.10.6-slim-buster
+# Start django api with gunicorn
+FROM python:3.8.5-slim-buster
 
 WORKDIR /app
 
+# set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-RUN pip install --upgrade pip 
+# install dependencies
+RUN pip install --upgrade pip
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 
+# copy project
 COPY . .
-EXPOSE 8000
 
-# Dev server not used in production
-# CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
-# using gunicorn, bind the app to port from env variable
-CMD gunicorn --bind
-# CMD ["gunicorn", "--bind", ":8000", "core.wsgi:application"]
+# start server
+CMD gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
